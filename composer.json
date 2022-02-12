@@ -1,0 +1,7 @@
+{
+    "name": "avametix/directapi",
+    "description": "An API wrapper for the DirectAdmin API",
+    "require": {
+        "php": ">=7.1.0"
+    }
+}
