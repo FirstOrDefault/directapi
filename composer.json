@@ -1,6 +1,26 @@
 {
     "name": "avametix/directapi",
+    "type": "library",
+    "version": "1.0.0",
     "description": "An API wrapper for the DirectAdmin API",
+    "keywords": [
+        "directadmin",
+        "api",
+        "wrapper"
+    ],
+    "readme": "README.md",
+    "license": "GPL-3.0-only",
+    "authors": [
+        {
+            "name": "Roël Couwenberg",
+            "email": "rcouw@avametix.com",
+            "homepage": "https://roelc.me",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "email": "git@avametix.com"
+    },
     "require": {
         "php": ">=7.1.0"
     }
