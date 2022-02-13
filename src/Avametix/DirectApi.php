@@ -152,6 +152,9 @@ class DirectApi
      * @return array The parsed result
      */
     private function parse_result(string $input) {
+        if (str_contains($input, "<title"))
+            return false;
+
         if (str_contains($input, "list[]")) 
             return $this->decode_list($input);
         
