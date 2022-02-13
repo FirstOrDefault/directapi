@@ -161,6 +161,9 @@ class DirectApi
         if (str_starts_with($input, "<html"))
             return false;
 
+        if (str_starts_with($input, '{'))
+            return json_decode($input);
+
         if (str_contains($input, "list[]")) 
             return $this->decode_list($input);
         
