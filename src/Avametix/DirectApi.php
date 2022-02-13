@@ -152,7 +152,7 @@ class DirectApi
      * @return array The parsed result
      */
     private function parse_result(string $input) {
-        if (str_contains($input, "<title"))
+        if (str_starts_with($input, "<html"))
             return false;
 
         if (str_contains($input, "list[]")) 
