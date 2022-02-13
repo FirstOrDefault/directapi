@@ -1,6 +1,8 @@
 # DirectApi
 DirectApi is a wrapper for the DirectAdmin API.
 
+[![Latest Stable Version](http://poser.pugx.org/avametix/directapi/v)](https://packagist.org/packages/avametix/directapi) [![Total Downloads](http://poser.pugx.org/avametix/directapi/downloads)](https://packagist.org/packages/avametix/directapi) [![Latest Unstable Version](http://poser.pugx.org/avametix/directapi/v/unstable)](https://packagist.org/packages/avametix/directapi) [![License](http://poser.pugx.org/avametix/directapi/license)](https://packagist.org/packages/avametix/directapi) [![PHP Version Require](http://poser.pugx.org/avametix/directapi/require/php)](https://packagist.org/packages/avametix/directapi)
+
 ## Installation
 Use the package manager [composer](https://getcomposer.org/) to install DirectApi.
 ```bash
