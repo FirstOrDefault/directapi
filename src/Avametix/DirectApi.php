@@ -67,7 +67,7 @@ class DirectApi
      * @access public
      */
     public function logout() {
-        $this->usernames = array_splice($this->usernames, 1);
+        $this->usernames = array_splice($this->usernames, 0, 1);
     }
 
     /**
