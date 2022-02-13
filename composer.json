@@ -1,7 +1,7 @@
 {
     "name": "avametix/directapi",
     "type": "library",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "An API wrapper for the DirectAdmin API",
     "keywords": [
         "directadmin",
