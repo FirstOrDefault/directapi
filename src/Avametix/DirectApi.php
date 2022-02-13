@@ -77,11 +77,12 @@ class DirectApi
      * 
      * @access public
      * @param string $command The DirectAdmin API command to execute
-     * @param ?array $data The data to transmit with the DirectAdmin API request
+     * @param ?array $params The parameters to transmit with the DirectAdmin API request
+     * @param ?string $prefix The prefix to use with the DirectAdmin API request, allows for accessing plugin commands/API's
      * @return array The parsed data
      */
-    public function get_api(string $command, ?array $data = null) {
-        return $this->get("/CMD_API_$command", $data);
+    public function get_api(string $command, ?array $params = null, ?string $prefix = "/CMD_API_") {
+        return $this->get("$prefix$command", $params);
     }
 
     /**
@@ -92,10 +93,12 @@ class DirectApi
      * @access public
      * @param string $command The DirectAdmin API command to execute
      * @param array $data The data to transmit with the DirectAdmin API request
+     * @param ?array $params The parameters to transmit with the DirectAdmin API request
+     * @param ?string $prefix The prefix to use with the DirectAdmin API request, allows for accessing plugin commands/API's
      * @return array The parsed data
      */
-    public function post_api(string $command, array $data) {
-        return $this->post("/CMD_API_$command", $data);
+    public function post_api(string $command, array $data, ?array $params = null, ?string $prefix = "/CMD_API_") {
+        return $this->post("$prefix$command", $data, $params);
     }
 
     /**
@@ -168,23 +171,22 @@ class DirectApi
      * 
      * @access private
      * @param string $destination The page the request should go to
-     * @param ?array $data The data to send with the request
+     * @param ?array $params The parameters to send with the request
      * @return object The parsed result
      */
-    private function get(string $destination, ?array $data = null) {
+    private function get(string $destination, ?array $params = null) {
         // Combine already set variables to create a valid endpoint
         $url = $this->protocol . "://" . $this->host . ":" . $this->port . $destination;
 
-        // Add data to GET request if data is set
-        if (!is_null($data) && isset($data))
-            $url .= "?" . http_build_query($data);
+        // Add parameters to GET request url if params are set
+        if (!is_null($params) && isset($params))
+            $url .= "?" . http_build_query($params);
 
         // Set correct headers
         $options = array(
             'http' => array(
                 'header'  => "Content-type: application/x-www-form-urlencoded\r\nAuthorization: Basic " . base64_encode($this->username() . ":" . $this->password) . "\r\n",
-                'method' => 'GET',
-                'content' => ''
+                'method' => 'GET'
             )
         );
 
@@ -208,15 +210,23 @@ class DirectApi
      * @access private
      * @param string $destination The page the request should go to
      * @param ?array $data The data to send with the request
+     * @param ?array $params The url parameters to send with the request
      * @return object The parsed result
      */
-    private function post(string $destination, $data) {
+    private function post(string $destination, ?array $data = null, ?array $params = null) {
         // Combine already set variables to create a valid endpoint
         $url = $this->protocol . "://" . $this->host . ":" . $this->port . $destination;
 
-        foreach ($data as $key => $value) {
-            $data[$key] = str_replace("|password|", $this->password, $value);
+        // Replace data fields where necessary
+        if (!is_null($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = str_replace("|password|", $this->password, $value);
+            }
         }
+
+        // Add params to the end of the query
+        if (!is_null($params))
+            $url .= "?" . http_build_query($params);
         
         // Set correct headers
         $options = array(
