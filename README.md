@@ -24,7 +24,7 @@ $directapi = new DirectApi(
 );
 
 // Get user domains
-$domains = $directapi->get("SHOW_DOMAINS");
+$domains = $directapi->get_api("SHOW_DOMAINS");
 
 if ($domains === false) {
     die(
