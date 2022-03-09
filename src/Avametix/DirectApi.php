@@ -35,7 +35,6 @@ class DirectApi
         $this->protocol = $protocol;
         $this->usernames = explode("|", $usernames);
         $this->password = $password;
-        $this->headers = [];
     }
     
     /**
