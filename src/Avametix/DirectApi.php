@@ -82,10 +82,10 @@ class DirectApi
      * @param string $command The DirectAdmin API command to execute
      * @param ?array $params The parameters to transmit with the DirectAdmin API request
      * @param ?string $prefix The prefix to use with the DirectAdmin API request, allows for accessing plugin commands/API's
-     * @return array The parsed data
+     * @return array The parsed result data
      */
     public function get_api(string $command, ?array $params = null, ?string $prefix = "/CMD_API_") {
-        return $this->get("$prefix$command", $params);
+        return $this->process_request('GET', "$prefix$command", $params);
     }
 
     /**
@@ -96,12 +96,12 @@ class DirectApi
      * @access public
      * @param string $command The DirectAdmin API command to execute
      * @param array $data The data to transmit with the DirectAdmin API request
-     * @param ?array $params The parameters to transmit with the DirectAdmin API request
+     * *MOD* ?array $params removed: don't mix (POST) data with (GET) query params!
      * @param ?string $prefix The prefix to use with the DirectAdmin API request, allows for accessing plugin commands/API's
-     * @return array The parsed data
+     * @return array The parsed result data
      */
-    public function post_api(string $command, array $data, ?array $params = null, ?string $prefix = "/CMD_API_") {
-        return $this->post("$prefix$command", $data, $params);
+    public function post_api(string $command, array $data, ?string $prefix = "/CMD_API_") {
+        return $this->process_request('POST', "$prefix$command", $data);
     }
 
     /**
@@ -171,88 +171,50 @@ class DirectApi
     }
 
     /**
-     * Sends a get request
+     * Sends a GET or POST request to the DirectAdmin API
+     * *MOD*: remove code duplication; replace post() and get()
      * 
-     * Uses destination and data to create a get request to the specified server and returns the parsed result
-     * 
-     * @access private
-     * @param string $destination The page the request should go to
-     * @param ?array $params The parameters to send with the request
-     * @return object The parsed result
-     */
-    private function get(string $destination, ?array $params = null) {
-        // Combine already set variables to create a valid endpoint
-        $url = $this->protocol . "://" . $this->host . ":" . $this->port . $destination;
-
-        // Add parameters to GET request url if params are set
-        if (!is_null($params) && isset($params))
-            $url .= "?" . http_build_query($params);
-
-        // Set correct headers
-        $options = array(
-            'http' => array(
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\nAuthorization: Basic " . base64_encode($this->username() . ":" . $this->password) . "\r\n",
-                'method' => 'GET'
-            )
-        );
-
-        // Create context and get contents from request
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
-
-        // Return false if request is invalid, else return the parsed result
-        if ($result === FALSE) {
-            return false;
-        }
-
-        return $this->parse_result($result);
-    }
-
-    /**
-     * Sends a post request
-     * 
-     * Uses destination and data to create a post request to the specified server and returns the parsed result
+     * Uses destination and parameters to create a request to the specified server and returns the parsed result
      * 
      * @access private
+     * @param string $method Either POST or GET
      * @param string $destination The page the request should go to
-     * @param ?array $data The data to send with the request
-     * @param ?array $params The url parameters to send with the request
+     * @param ?array $parameters The data or query parameters to send with the request
      * @return object The parsed result
      */
-    private function post(string $destination, ?array $data = null, ?array $params = null) {
-        // Combine already set variables to create a valid endpoint
+    private function process_request(string $method, string $destination, ?array $parameters = null) {
+        // assert(in_array($method,['GET','POST']));
+
+        // $prefix ensures that $destination starts with '/'
         $url = $this->protocol . "://" . $this->host . ":" . $this->port . $destination;
 
-        // Replace data fields where necessary
-        if (!is_null($data)) {
-            foreach ($data as $key => $value) {
-                $data[$key] = str_replace("|password|", $this->password, $value);
+        // Prepare http options
+        $httpOpt = [
+            'header' => [
+                'Content-type: application/x-www-form-urlencoded',
+                'Authorization: Basic '.base64_encode($this->username() . ":" . $this->password),
+                ],
+            'method' => $method, // POST/GET
+            ];
+        // possible enhancement: property additional_headers, method add_headers, use array_merge for httpOpt
+
+        // Prepare parameters
+        if ($parameters) {
+            $parameters = str_replace("|password|", $this->password, http_build_query($parameters));
+            if ($method=='POST') { // content
+                $httpOpt['content'] = $parameters;
+            }
+            else { // GET: querystring
+                $url .= '?' . $parameters;
             }
         }
 
-        // Add params to the end of the query
-        if (!is_null($params))
-            $url .= "?" . http_build_query($params);
-        
-        // Set correct headers
-        $options = array(
-            'http' => array(
-                'header'  => "Content-type: application/x-www-form-urlencoded\r\nAuthorization: Basic " . base64_encode($this->username() . ":" . $this->password) . "\r\n",
-                'method' => 'POST',
-                'content' => http_build_query($data)
-            )
-        );
-
         // Create context and get contents from request
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
+        $result = file_get_contents($url, false, stream_context_create(['http' => $httpOpt]));
 
         // Return false if request is invalid, else return the parsed result
-        if ($result === FALSE) {
-            return false;
-        }
-
-        return $this->parse_result($result);
+        // note: result may be an array like ['error'=>99, 'text'=>'error description']
+        return ($result===false ? false : $this->parse_result($result));
     }
 }
 
